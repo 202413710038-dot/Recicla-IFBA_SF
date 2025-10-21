@@ -105,12 +105,11 @@ const respostas = {
   }
 };
 
-// Estado do chatbot
-let opcoesDisponiveis = new Set(Object.keys(respostas));
+let opcoesDisponiveis = new Set(["Como Funciona","Componentes","Problemas"]); // apenas principais inicialmente
 const opcoesPrincipais = ["Como Funciona", "Componentes", "Problemas"];
 
-// Função para adicionar mensagem
-function addMessage(text, sender = "bot") {
+// Adiciona mensagem
+function addMessage(text, sender="bot") {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
   msg.textContent = text;
@@ -124,9 +123,7 @@ function addButtons(parentMsg, opcoes) {
   if (!opcoes || opcoes.length === 0) return;
 
   const nextElem = parentMsg.nextSibling;
-  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
-    nextElem.remove();
-  }
+  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) nextElem.remove();
 
   const container = document.createElement("div");
   container.classList.add("button-container");
@@ -139,6 +136,7 @@ function addButtons(parentMsg, opcoes) {
     btn.textContent = key;
 
     btn.addEventListener("click", () => {
+      // Remove a opção clicada
       opcoesDisponiveis.delete(key);
       container.remove();
       addMessage(key, "user");
@@ -149,8 +147,12 @@ function addButtons(parentMsg, opcoes) {
       setTimeout(() => {
         typingMsg.remove();
         const botMsg = addMessage(respostas[key].texto, "bot");
-        addFazerOutraPergunta(botMsg); // botão sempre disponível
+
+        // Sub-opções aparecem imediatamente após resposta
         addButtons(botMsg, respostas[key].subOpcoes);
+
+        // Botão "Fazer outra pergunta" aparece sempre se ainda houver principais
+        addFazerOutraPergunta(botMsg);
       }, 800);
     });
 
@@ -161,12 +163,10 @@ function addButtons(parentMsg, opcoes) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Botão "Fazer outra pergunta" / "Reiniciar Chat"
+// Botão "Fazer outra pergunta" ou "Reiniciar Chat"
 function addFazerOutraPergunta(parentMsg) {
   const nextElem = parentMsg.nextSibling;
-  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
-    nextElem.remove();
-  }
+  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) nextElem.remove();
 
   const container = document.createElement("div");
   container.classList.add("button-container");
@@ -192,7 +192,7 @@ function addFazerOutraPergunta(parentMsg) {
 
     btn.addEventListener("click", () => {
       chatBox.innerHTML = "";
-      opcoesDisponiveis = new Set(Object.keys(respostas));
+      opcoesDisponiveis = new Set(["Como Funciona","Componentes","Problemas"]);
       const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
       addButtons(initialMsg, opcoesPrincipais);
     });
