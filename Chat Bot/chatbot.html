@@ -104,6 +104,7 @@ const respostas = {
 
 // Estado do chatbot
 let clicados = new Set();
+let iniciou = false;
 
 // Função para adicionar mensagem
 function addMessage(text, sender="bot") {
@@ -117,18 +118,18 @@ function addMessage(text, sender="bot") {
 
 // Função para obter opções disponíveis respeitando hierarquia
 function getOpcoesDisponiveis() {
-  // Primeiro prioridade: sub-opções de seções clicadas mas não completas
+  // Prioridade: sub-opções de seções clicadas mas não completas
   for (let key of clicados) {
     const sub = respostas[key]?.subOpcoes.filter(s => !clicados.has(s));
     if (sub && sub.length > 0) return sub;
   }
 
-  // Se nenhuma sub-opção pendente, liberar próximas opções principais ainda não clicadas
+  // Se não houver sub-opções pendentes, liberar principais não clicadas
   const opcoesPrincipais = Object.keys(respostas).filter(k => !clicados.has(k));
   return opcoesPrincipais;
 }
 
-// Adiciona botões
+// Função para adicionar botões
 function addButtons(parentMsg) {
   const opcoes = getOpcoesDisponiveis();
   if (opcoes.length === 0) {
@@ -179,13 +180,13 @@ function addButtons(parentMsg) {
 function restartChat() {
   chatBox.innerHTML = "";
   clicados = new Set();
-  // Mensagem inicial fixa
+  iniciou = true;
   const initialMsg = addMessage("Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.", "bot");
   addButtons(initialMsg);
 }
 
 // Inicia chat
-restartChat();
+if (!iniciou) restartChat();
 </script>
 </body>
 </html>
