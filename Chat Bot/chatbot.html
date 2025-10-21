@@ -125,7 +125,6 @@ function addMessage(text, sender="bot") {
   });
 }
 
-// Fade progressivo suave a cada 2 mensagens
 function fadeOldMessages() {
   const messages = Array.from(chatBox.querySelectorAll(".message"));
   const fadeStep = 0.15;
@@ -139,7 +138,6 @@ function fadeOldMessages() {
   }
 }
 
-// Adiciona botões em sequência
 function addButtons(parentMsg, opcoes) {
   if (!opcoes || opcoes.length === 0) return;
 
@@ -196,7 +194,6 @@ function addButtons(parentMsg, opcoes) {
   }, delay);
 }
 
-// Botão "Fazer outra pergunta" / "Adeus"
 function addFazerOutraPergunta(parentMsg) {
   const container = document.createElement("div");
   container.classList.add("button-container");
@@ -210,7 +207,7 @@ function addFazerOutraPergunta(parentMsg) {
       container.remove();
       await addMessage("Fazer outra pergunta", "user");
       const novaMsg = await addMessage("Perfeito, o que mais deseja perguntar?", "bot");
-      const principais = ["Como Funciona", "Componentes", "Problemas"].filter(op => opcoesDisponiveis.has(op));
+      const principais = ["Como Funciona", "Componentes"].filter(op => opcoesDisponiveis.has(op));
       addButtons(novaMsg, principais);
     });
   } else {
@@ -237,10 +234,9 @@ function addFazerOutraPergunta(parentMsg) {
   }, 100);
 }
 
-// Inicialização
 (async function init() {
-  const initialMsg = await addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
-  addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
+  const initialMsg = await addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona ou Componentes.", "bot");
+  addButtons(initialMsg, ["Como Funciona", "Componentes"]);
 })();
 </script>
 </body>
