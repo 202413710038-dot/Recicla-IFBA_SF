@@ -3,232 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assistente da Lixeira Inteligente</title>
+<title>Chatbot - Lixeira Inteligente</title>
 <style>
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #007bff, #00d4ff);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  height: 100vh; margin: 0;
+  display: flex; justify-content: center; align-items: center;
 }
 #chat-container {
-  width: 420px;
-  height: 640px;
+  width: 420px; height: 640px;
   background: #fff;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  display: flex; flex-direction: column; overflow: hidden;
 }
 #header {
-  background: #007bff;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
+  background: #007bff; color: white; text-align: center;
+  padding: 15px; font-weight: bold; font-size: 20px;
 }
 #chat-box {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  flex: 1; padding: 15px; overflow-y: auto;
+  display: flex; flex-direction: column;
 }
 .message {
-  margin: 8px 0;
-  padding: 10px 14px;
-  border-radius: 15px;
-  max-width: 80%;
-  word-wrap: break-word;
+  margin: 6px 0; padding: 10px 14px;
+  border-radius: 15px; max-width: 80%;
 }
-.user {
-  background: #007bff;
-  color: white;
-  align-self: flex-end;
-}
-.bot {
-  background: #f1f0f0;
-  color: black;
-  align-self: flex-start;
-}
+.user { align-self: flex-end; background: #007bff; color: white; }
+.bot { align-self: flex-start; background: #f1f0f0; color: black; }
 #input-area {
-  display: flex;
-  border-top: 1px solid #ddd;
+  display: flex; border-top: 1px solid #ccc;
 }
 #user-input {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  outline: none;
-  font-size: 15px;
+  flex: 1; border: none; padding: 12px; font-size: 15px; outline: none;
 }
 #send-btn {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0 20px;
-  font-size: 16px;
-  cursor: pointer;
+  background: #007bff; color: white; border: none;
+  padding: 0 18px; font-size: 16px; cursor: pointer;
 }
-#send-btn:hover {
-  background: #0056b3;
-}
-.quick-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-.quick-buttons button {
-  background: #e7f0ff;
-  color: #007bff;
-  border: 1px solid #007bff;
-  border-radius: 20px;
-  padding: 5px 10px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.quick-buttons button:hover {
-  background: #007bff;
-  color: white;
-}
-#image-container {
-  text-align: center;
-  margin-bottom: 10px;
-}
-#image-container img {
-  max-width: 80%;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
+#send-btn:hover { background: #0056b3; }
 </style>
 </head>
 <body>
-
 <div id="chat-container">
-  <div id="header">🤖 Assistente da Lixeira Inteligente</div>
-
-  <div id="chat-box">
-    <div id="image-container">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Trash_bin_icon.svg/800px-Trash_bin_icon.svg.png" alt="Lixeira Inteligente">
-    </div>
-  </div>
-
+  <div id="header">🤖 Lixeira Inteligente</div>
+  <div id="chat-box"></div>
   <div id="input-area">
-    <input id="user-input" type="text" placeholder="Digite sua pergunta...">
+    <input type="text" id="user-input" placeholder="Pergunte sobre a lixeira...">
     <button id="send-btn">Enviar</button>
   </div>
 </div>
 
 <script>
-const chatBox = document.getElementById("chat-box");
-const input = document.getElementById("user-input");
-const sendBtn = document.getElementById("send-btn");
+const REPO_URL = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/dados.json";
+
+let baseConhecimento = {};
+
+async function carregarDados() {
+  const res = await fetch(REPO_URL);
+  baseConhecimento = await res.json();
+}
 
 function addMessage(text, sender) {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
-  msg.innerHTML = text;
-  chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  msg.innerHTML = text.replace(/\n/g, "<br>");
+  document.getElementById("chat-box").appendChild(msg);
+  document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
 }
 
-function addQuickButtons(options) {
-  const div = document.createElement("div");
-  div.classList.add("quick-buttons");
-  options.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.textContent = opt;
-    btn.onclick = () => {
-      addMessage(opt, "user");
-      handleResponse(opt);
-      div.remove();
-    };
-    div.appendChild(btn);
-  });
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+function responderPergunta(pergunta) {
+  pergunta = pergunta.toLowerCase();
+  let resposta = "Desculpe, não encontrei informações sobre isso ainda.";
+
+  for (const chave in baseConhecimento) {
+    if (pergunta.includes(chave)) {
+      resposta = baseConhecimento[chave];
+      break;
+    }
+  }
+
+  return resposta;
 }
 
-function handleResponse(userText) {
-  const text = userText.toLowerCase();
-
-  let reply = "";
-
-  if (text.includes("oi") || text.includes("olá") || text.includes("ola")) {
-    reply = "Olá! 👋 Sou o assistente da Lixeira Inteligente. O que você quer saber?";
-    addMessage(reply, "bot");
-    addQuickButtons(["Ver componentes", "Como montar", "Sobre a IA"]);
-    return;
-  }
-
-  if (text.includes("componentes") || text.includes("materiais")) {
-    reply = "🧩 Componentes necessários:<br>- Arduino Uno<br>- Protoboard<br>- 1 ou 2 Servos Motores (SG90 ou MG90S)<br>- Câmera USB<br>- Fonte 5V<br>- Fios jumper<br>- Estrutura da lixeira (plástico leve)";
-    addMessage(reply, "bot");
-    addQuickButtons(["Como montar", "Função da IA"]);
-    return;
-  }
-
-  if (text.includes("montar") || text.includes("conectar") || text.includes("ligar")) {
-    reply = "🔧 Para montar:<br>1️⃣ Conecte o servo ao pino D9 do Arduino.<br>2️⃣ Ligue o fio vermelho no 5V, marrom no GND.<br>3️⃣ Se usar 2 servos, use D9 e D10.<br>4️⃣ Conecte a câmera no computador que roda a IA.";
-    addMessage(reply, "bot");
-    addQuickButtons(["Como funciona a IA", "Abrir tampa"]);
-    return;
-  }
-
-  if (text.includes("ia") || text.includes("inteligência") || text.includes("camera")) {
-    reply = "🤖 A IA usa visão computacional para identificar o tipo de lixo (plástico, metal, papel). Assim, o servo abre automaticamente a tampa correta.";
-    addMessage(reply, "bot");
-    addQuickButtons(["Tipos de materiais", "Abrir tampa"]);
-    return;
-  }
-
-  if (text.includes("abrir") || text.includes("tampa")) {
-    reply = "🗑️ O servo gira 90° para levantar a tampa do compartimento certo. Por exemplo, ao detectar 'metal', abre a tampa do metal.";
-    addMessage(reply, "bot");
-    addQuickButtons(["Problemas no servo", "Fechar tampa"]);
-    return;
-  }
-
-  if (text.includes("problema") || text.includes("servo") || text.includes("não gira")) {
-    reply = "⚠️ Verifique se:<br>- O servo está bem conectado ao GND e 5V;<br>- Há corrente suficiente (mínimo 1A);<br>- O sinal está no pino digital correto (ex: D9).";
-    addMessage(reply, "bot");
-    addQuickButtons(["Ver componentes", "Como montar"]);
-    return;
-  }
-
-  if (text.includes("obrigado") || text.includes("valeu")) {
-    reply = "😊 De nada! Se quiser, posso te mostrar o esquema de ligação também.";
-    addMessage(reply, "bot");
-    addQuickButtons(["Mostrar esquema", "Fim"]);
-    return;
-  }
-
-  reply = "😅 Não entendi bem. Você pode perguntar sobre componentes, montagem ou a IA de reconhecimento.";
-  addMessage(reply, "bot");
-  addQuickButtons(["Ver componentes", "Como montar", "Sobre a IA"]);
-}
-
-sendBtn.onclick = () => {
-  const userText = input.value.trim();
-  if (!userText) return;
-  addMessage(userText, "user");
+async function enviarMensagem() {
+  const input = document.getElementById("user-input");
+  const texto = input.value.trim();
+  if (!texto) return;
+  addMessage(texto, "user");
   input.value = "";
-  setTimeout(() => handleResponse(userText), 400);
-};
 
-input.addEventListener("keypress", e => {
-  if (e.key === "Enter") sendBtn.click();
+  addMessage("Analisando sua pergunta...", "bot");
+  setTimeout(() => {
+    document.querySelector("#chat-box .bot:last-child").remove();
+    const resposta = responderPergunta(texto);
+    addMessage(resposta, "bot");
+  }, 700);
+}
+
+document.getElementById("send-btn").onclick = enviarMensagem;
+document.getElementById("user-input").addEventListener("keypress", e => {
+  if (e.key === "Enter") enviarMensagem();
 });
 
-// Mensagem inicial
-addMessage("Olá! 👋 Eu sou o assistente da Lixeira Inteligente. Quer saber como ela funciona?", "bot");
-addQuickButtons(["Ver componentes", "Como montar", "Sobre a IA"]);
+addMessage("Olá! 👋 Sou o assistente da Lixeira Inteligente. Pergunte-me sobre montagem, Arduino, servos, câmera ou materiais!", "bot");
+
+carregarDados();
 </script>
 </body>
 </html>
