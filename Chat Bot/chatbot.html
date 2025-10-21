@@ -61,8 +61,15 @@ const REPO_URL = "https://raw.githubusercontent.com/202413710038-dot/Recicla-IFB
 let baseConhecimento = {};
 
 async function carregarDados() {
-  const res = await fetch(REPO_URL);
-  baseConhecimento = await res.json();
+  try {
+    const res = await fetch(REPO_URL);
+    if (!res.ok) throw new Error("Não foi possível carregar o JSON");
+    baseConhecimento = await res.json();
+    console.log("Dados carregados com sucesso:", baseConhecimento);
+  } catch (err) {
+    console.error("Erro ao carregar dados:", err);
+    addMessage("Erro ao carregar dados do chatbot. Verifique a URL do JSON.", "bot");
+  }
 }
 
 function addMessage(text, sender) {
@@ -78,7 +85,7 @@ function responderPergunta(pergunta) {
   let resposta = "Desculpe, não encontrei informações sobre isso ainda.";
 
   for (const chave in baseConhecimento) {
-    if (pergunta.includes(chave)) {
+    if (pergunta.includes(chave.toLowerCase())) {
       resposta = baseConhecimento[chave];
       break;
     }
@@ -107,10 +114,11 @@ document.getElementById("user-input").addEventListener("keypress", e => {
   if (e.key === "Enter") enviarMensagem();
 });
 
+// Mensagem inicial
 addMessage("Olá! 👋 Sou o assistente da Lixeira Inteligente. Pergunte-me sobre montagem, Arduino, servos, câmera ou materiais!", "bot");
 
+// Carrega os dados JSON
 carregarDados();
 </script>
 </body>
 </html>
-
