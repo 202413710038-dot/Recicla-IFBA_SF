@@ -74,42 +74,40 @@ body {
 </div>
 
 <script>
-// Chatbot com sub-opções
+// Chatbot com sub-opções e animação de digitando
 const chatBox = document.getElementById("chat-box");
 
-// Estrutura de respostas com sub-opções
+// Respostas melhoradas com sub-opções
 const respostas = {
-  Oi: {
-    texto: "Olá! Eu sou o assistente da Lixeira Inteligente. Posso te ajudar a entender como ela funciona.",
-    subOpcoes: ["Como Funciona", "Componentes", "IA"]
-  },
   "Como Funciona": {
-    texto: "A Lixeira Inteligente usa um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
-    subOpcoes: ["Tampa", "Conexoes"]
+    texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
+    subOpcoes: ["Tampa"]
   },
-  Componentes: {
-    texto: "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera (USB ou módulo), fios jumper e fonte 5V.",
-    subOpcoes: ["Problemas"]
+  "Componentes": {
+    texto: `Você vai precisar de:
+- 1 Arduino Uno
+- 1 Protoboard
+- 1 ou 2 Servos motores
+- 1 Câmera (USB ou módulo)
+- Fios jumper
+- Fonte 5V`,
+    subOpcoes: ["Conexões"]
   },
-  Conexoes: {
-    texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
-    subOpcoes: ["Problemas"]
+  "Problemas": {
+    texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
+    subOpcoes: []
   },
-  IA: {
-    texto: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.",
-    subOpcoes: ["Como Funciona", "Componentes"]
-  },
-  Tampa: {
+  "Tampa": {
     texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
     subOpcoes: []
   },
-  Problemas: {
-    texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
+  "Conexões": {
+    texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
     subOpcoes: []
   }
 };
 
-// Mantém todas as opções disponíveis globalmente
+// Mantém opções disponíveis globalmente
 let opcoesDisponiveis = new Set(Object.keys(respostas));
 
 // Função para adicionar mensagem
@@ -136,7 +134,6 @@ function addButtons(parentMsg, opcoes) {
   buttonContainer.classList.add("button-container");
 
   opcoes.forEach(key => {
-    // só adiciona se ainda estiver disponível
     if (!opcoesDisponiveis.has(key)) return;
 
     const btn = document.createElement("button");
@@ -144,13 +141,13 @@ function addButtons(parentMsg, opcoes) {
     btn.textContent = key;
 
     btn.addEventListener("click", () => {
-      // remove a opção permanentemente
+      // Remove a opção permanentemente
       opcoesDisponiveis.delete(key);
-      // remove botões atuais
+      // Remove os botões atuais
       buttonContainer.remove();
-      // mensagem do usuário
+      // Mensagem do usuário
       addMessage(key, "user");
-      // animação digitando
+      // Animação digitando
       const typingMsg = addMessage("Digitando...", "bot");
       typingMsg.classList.add("typing");
 
@@ -169,8 +166,8 @@ function addButtons(parentMsg, opcoes) {
 }
 
 // Mensagem inicial
-const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
-addButtons(initialMsg, ["Oi"]);
+const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
+addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
 </script>
 </body>
 </html>
