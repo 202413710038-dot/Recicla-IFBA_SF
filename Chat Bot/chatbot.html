@@ -68,13 +68,11 @@ body {
 <body>
 <div id="chat-container">
   <div id="chat-box"></div>
-  <div id="button-area"></div>
 </div>
 
 <script>
 // --- Chatbot com botões ---
 const chatBox = document.getElementById("chat-box");
-const buttonArea = document.getElementById("button-area");
 
 // respostas pré-programadas
 const respostas = {
@@ -87,20 +85,6 @@ const respostas = {
   Problemas: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A)."
 };
 
-// criar botões para cada tópico
-Object.keys(respostas).forEach(key => {
-  const btn = document.createElement("button");
-  btn.classList.add("topic-btn");
-  btn.textContent = key;
-  btn.addEventListener("click", () => {
-    // mensagem do usuário
-    addMessage(key, "user");
-    // resposta do bot
-    setTimeout(() => addMessage(respostas[key], "bot"), 400);
-  });
-  buttonArea.appendChild(btn);
-});
-
 // função para adicionar mensagem
 function addMessage(text, sender) {
   const msg = document.createElement("div");
@@ -110,8 +94,42 @@ function addMessage(text, sender) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+// função para criar botões
+function addButtons() {
+  // remove qualquer botão existente
+  const prevButtons = document.getElementById("button-area");
+  if (prevButtons) prevButtons.remove();
+
+  const buttonArea = document.createElement("div");
+  buttonArea.id = "button-area";
+
+  Object.keys(respostas).forEach(key => {
+    const btn = document.createElement("button");
+    btn.classList.add("topic-btn");
+    btn.textContent = key;
+    btn.addEventListener("click", () => {
+      // remove os botões após clicar
+      buttonArea.remove();
+      // adiciona a mensagem do usuário
+      addMessage(key, "user");
+      // adiciona a resposta do bot após pequeno delay
+      setTimeout(() => {
+        addMessage(respostas[key], "bot");
+        // adiciona novos botões para próxima interação
+        addButtons();
+      }, 400);
+    });
+    buttonArea.appendChild(btn);
+  });
+
+  chatBox.appendChild(buttonArea);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 // mensagem inicial
 addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
+// adiciona os botões iniciais
+addButtons();
 </script>
 </body>
 </html>
