@@ -70,7 +70,7 @@ body {
 </div>
 
 <script>
-// Chatbot com botões acoplados às mensagens
+// Chatbot com botões que desaparecem permanentemente
 const chatBox = document.getElementById("chat-box");
 
 // Respostas pré-programadas
@@ -84,6 +84,9 @@ const respostas = {
   Problemas: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A)."
 };
 
+// Mantém o estado das opções disponíveis
+let opcoesDisponiveis = Object.keys(respostas);
+
 // Função para adicionar mensagem
 function addMessage(text, sender = "bot") {
   const msg = document.createElement("div");
@@ -91,21 +94,31 @@ function addMessage(text, sender = "bot") {
   msg.textContent = text;
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
-  return msg; // retorna a div da mensagem
+  return msg;
 }
 
 // Função para adicionar botões abaixo de uma mensagem
 function addButtons(parentMsg) {
+  // Remove qualquer botão da mensagem anterior
+  const prevButtons = parentMsg.nextSibling;
+  if (prevButtons && prevButtons.classList && prevButtons.classList.contains("button-container")) {
+    prevButtons.remove();
+  }
+
+  if (opcoesDisponiveis.length === 0) return; // nada a mostrar
+
   const buttonContainer = document.createElement("div");
   buttonContainer.classList.add("button-container");
 
-  Object.keys(respostas).forEach(key => {
+  opcoesDisponiveis.forEach(key => {
     const btn = document.createElement("button");
     btn.classList.add("topic-btn");
     btn.textContent = key;
 
     btn.addEventListener("click", () => {
-      // Remove os botões atuais
+      // Remove o botão clicado da lista de opções disponíveis
+      opcoesDisponiveis = opcoesDisponiveis.filter(opt => opt !== key);
+      // Remove os botões atuais da mensagem
       buttonContainer.remove();
       // Mensagem do usuário
       addMessage(key, "user");
@@ -120,14 +133,13 @@ function addButtons(parentMsg) {
     buttonContainer.appendChild(btn);
   });
 
-  // Acopla os botões à mensagem do bot
   parentMsg.after(buttonContainer);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 // Mensagem inicial
 const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
-// Adiciona botões abaixo da mensagem inicial
+// Adiciona os botões iniciais
 addButtons(initialMsg);
 </script>
 </body>
