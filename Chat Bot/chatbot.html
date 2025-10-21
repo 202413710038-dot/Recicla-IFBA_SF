@@ -45,12 +45,11 @@ body {
   color: black;
   align-self: flex-start;
 }
-#button-area {
+.button-container {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 10px;
-  justify-content: center;
+  margin-top: 5px;
 }
 .topic-btn {
   background: #007bff;
@@ -71,10 +70,10 @@ body {
 </div>
 
 <script>
-// --- Chatbot com botões ---
+// Chatbot com botões acoplados às mensagens
 const chatBox = document.getElementById("chat-box");
 
-// respostas pré-programadas
+// Respostas pré-programadas
 const respostas = {
   Oi: "Olá! Eu sou o assistente da Lixeira Inteligente. Posso te ajudar a entender como ela funciona.",
   "Como Funciona": "A Lixeira Inteligente usa um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
@@ -85,51 +84,51 @@ const respostas = {
   Problemas: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A)."
 };
 
-// função para adicionar mensagem
-function addMessage(text, sender) {
+// Função para adicionar mensagem
+function addMessage(text, sender = "bot") {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
   msg.textContent = text;
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
+  return msg; // retorna a div da mensagem
 }
 
-// função para criar botões
-function addButtons() {
-  // remove qualquer botão existente
-  const prevButtons = document.getElementById("button-area");
-  if (prevButtons) prevButtons.remove();
-
-  const buttonArea = document.createElement("div");
-  buttonArea.id = "button-area";
+// Função para adicionar botões abaixo de uma mensagem
+function addButtons(parentMsg) {
+  const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add("button-container");
 
   Object.keys(respostas).forEach(key => {
     const btn = document.createElement("button");
     btn.classList.add("topic-btn");
     btn.textContent = key;
+
     btn.addEventListener("click", () => {
-      // remove os botões após clicar
-      buttonArea.remove();
-      // adiciona a mensagem do usuário
+      // Remove os botões atuais
+      buttonContainer.remove();
+      // Mensagem do usuário
       addMessage(key, "user");
-      // adiciona a resposta do bot após pequeno delay
+      // Resposta do bot
       setTimeout(() => {
-        addMessage(respostas[key], "bot");
-        // adiciona novos botões para próxima interação
-        addButtons();
+        const botMsg = addMessage(respostas[key], "bot");
+        // Adiciona novos botões abaixo da resposta
+        addButtons(botMsg);
       }, 400);
     });
-    buttonArea.appendChild(btn);
+
+    buttonContainer.appendChild(btn);
   });
 
-  chatBox.appendChild(buttonArea);
+  // Acopla os botões à mensagem do bot
+  parentMsg.after(buttonContainer);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// mensagem inicial
-addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
-// adiciona os botões iniciais
-addButtons();
+// Mensagem inicial
+const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
+// Adiciona botões abaixo da mensagem inicial
+addButtons(initialMsg);
 </script>
 </body>
 </html>
