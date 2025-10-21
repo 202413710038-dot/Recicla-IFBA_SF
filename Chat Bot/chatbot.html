@@ -75,7 +75,8 @@ body {
 </div>
 
 <script>
-// --- Dados ---
+const chatBox = document.getElementById("chat-box");
+
 const respostas = {
   "Como Funciona": {
     texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
@@ -105,11 +106,8 @@ const respostas = {
   }
 };
 
-// Estado do chatbot
 let opcoesDisponiveis = new Set(Object.keys(respostas));
-const opcoesPrincipais = ["Como Funciona", "Componentes", "Problemas"];
 
-// Função para adicionar mensagem
 function addMessage(text, sender = "bot") {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
@@ -119,7 +117,6 @@ function addMessage(text, sender = "bot") {
   return msg;
 }
 
-// Adiciona botões
 function addButtons(parentMsg, opcoes) {
   if (!opcoes || opcoes.length === 0) return;
 
@@ -128,8 +125,8 @@ function addButtons(parentMsg, opcoes) {
     nextElem.remove();
   }
 
-  const container = document.createElement("div");
-  container.classList.add("button-container");
+  const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add("button-container");
 
   opcoes.forEach(key => {
     if (!opcoesDisponiveis.has(key)) return;
@@ -140,7 +137,7 @@ function addButtons(parentMsg, opcoes) {
 
     btn.addEventListener("click", () => {
       opcoesDisponiveis.delete(key);
-      container.remove();
+      buttonContainer.remove();
       addMessage(key, "user");
 
       const typingMsg = addMessage("Digitando...", "bot");
@@ -149,64 +146,48 @@ function addButtons(parentMsg, opcoes) {
       setTimeout(() => {
         typingMsg.remove();
         const botMsg = addMessage(respostas[key].texto, "bot");
-        addFazerOutraPergunta(botMsg); // botão sempre disponível
+
+        // Adiciona botão "Fazer outra pergunta" após a resposta
+        addFazerOutraPergunta(botMsg);
         addButtons(botMsg, respostas[key].subOpcoes);
       }, 800);
     });
 
-    container.appendChild(btn);
+    buttonContainer.appendChild(btn);
   });
 
-  parentMsg.after(container);
+  parentMsg.after(buttonContainer);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Botão "Fazer outra pergunta" / "Reiniciar Chat"
+// Função corrigida do botão "Fazer outra pergunta"
 function addFazerOutraPergunta(parentMsg) {
-  const nextElem = parentMsg.nextSibling;
-  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
-    nextElem.remove();
-  }
-
   const container = document.createElement("div");
   container.classList.add("button-container");
 
-  if (opcoesDisponiveis.size > 0) {
-    const btn = document.createElement("button");
-    btn.classList.add("topic-btn");
-    btn.textContent = "Fazer outra pergunta";
+  const btn = document.createElement("button");
+  btn.classList.add("topic-btn");
+  btn.textContent = "Fazer outra pergunta";
 
-    btn.addEventListener("click", () => {
-      container.remove();
-      addMessage("Perfeito, o que mais deseja perguntar?", "bot");
+  btn.addEventListener("click", () => {
+    container.remove();
 
-      const principaisDisponiveis = opcoesPrincipais.filter(op => opcoesDisponiveis.has(op));
-      addButtons(parentMsg, principaisDisponiveis);
-    });
+    // Nova mensagem que será referência para os botões
+    const novaMsg = addMessage("Perfeito, o que mais deseja perguntar?", "bot");
 
-    container.appendChild(btn);
-  } else {
-    const btn = document.createElement("button");
-    btn.classList.add("topic-btn");
-    btn.textContent = "Reiniciar Chat";
+    // Mostra apenas opções principais ainda disponíveis
+    const principais = ["Como Funciona", "Componentes", "Problemas"].filter(op => opcoesDisponiveis.has(op));
+    addButtons(novaMsg, principais); // <<< passamos novaMsg como parent
+  });
 
-    btn.addEventListener("click", () => {
-      chatBox.innerHTML = "";
-      opcoesDisponiveis = new Set(Object.keys(respostas));
-      const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
-      addButtons(initialMsg, opcoesPrincipais);
-    });
-
-    container.appendChild(btn);
-  }
-
+  container.appendChild(btn);
   parentMsg.after(container);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 // Mensagem inicial
 const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
-addButtons(initialMsg, opcoesPrincipais);
+addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
 </script>
 </body>
 </html>
