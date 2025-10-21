@@ -3,123 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chatbot - Lixeira Inteligente</title>
+<title>Chatbot da Lixeira Inteligente</title>
 <style>
 body {
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #007bff, #00c6ff);
-  height: 100vh; margin: 0;
-  display: flex; justify-content: center; align-items: center;
+  background: #f4f4f9;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 #chat-container {
-  width: 420px; height: 640px;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-  display: flex; flex-direction: column; overflow: hidden;
-}
-#header {
-  background: #007bff; color: white; text-align: center;
-  padding: 15px; font-weight: bold; font-size: 20px;
+  width: 400px;
+  height: 600px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 #chat-box {
-  flex: 1; padding: 15px; overflow-y: auto;
-  display: flex; flex-direction: column;
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
 }
 .message {
-  margin: 6px 0; padding: 10px 14px;
-  border-radius: 15px; max-width: 80%;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 80%;
 }
-.user { align-self: flex-end; background: #007bff; color: white; }
-.bot { align-self: flex-start; background: #f1f0f0; color: black; }
-#input-area {
-  display: flex; border-top: 1px solid #ccc;
+.bot {
+  background: #e6e6e6;
+  color: black;
+  align-self: flex-start;
 }
-#user-input {
-  flex: 1; border: none; padding: 12px; font-size: 15px; outline: none;
-}
-#send-btn {
-  background: #007bff; color: white; border: none;
-  padding: 0 18px; font-size: 16px; cursor: pointer;
-}
-#send-btn:hover { background: #0056b3; }
 </style>
 </head>
 <body>
 <div id="chat-container">
-  <div id="header">🤖 Lixeira Inteligente</div>
   <div id="chat-box"></div>
-  <div id="input-area">
-    <input type="text" id="user-input" placeholder="Pergunte sobre a lixeira...">
-    <button id="send-btn">Enviar</button>
-  </div>
 </div>
 
 <script>
-const REPO_URL = "https://raw.githubusercontent.com/202413710038-dot/Recicla-IFBA_SF/main/Chat%20Bot/data.json";
+// --- Chatbot automático ---
+const chatBox = document.getElementById("chat-box");
 
+// mensagens pré-programadas
+const mensagens = [
+  "Olá! Sou o chatbot da Lixeira Inteligente. Posso te explicar como ela funciona.",
+  "A Lixeira Inteligente usa Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
+  "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera, fios jumper e fonte 5V.",
+  "Conecte o servo ao pino digital do Arduino (ex: D9), VCC no 5V e GND no GND. A câmera vai no PC que roda a IA.",
+  "A IA usa visão computacional para identificar o tipo de material, reconhecendo plástico, metal e papel.",
+  "O servo gira para levantar a tampa do compartimento correto.",
+  "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
+  "Espero que isso ajude! 😄"
+];
 
-let baseConhecimento = {};
-
-async function carregarDados() {
-  try {
-    const res = await fetch(REPO_URL);
-    if (!res.ok) throw new Error("Não foi possível carregar o JSON");
-    baseConhecimento = await res.json();
-    console.log("Dados carregados com sucesso:", baseConhecimento);
-  } catch (err) {
-    console.error("Erro ao carregar dados:", err);
-    addMessage("Erro ao carregar dados do chatbot. Verifique a URL do JSON.", "bot");
-  }
-}
-
-function addMessage(text, sender) {
+// função para adicionar mensagens
+function addMessage(text) {
   const msg = document.createElement("div");
-  msg.classList.add("message", sender);
-  msg.innerHTML = text.replace(/\n/g, "<br>");
-  document.getElementById("chat-box").appendChild(msg);
-  document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+  msg.classList.add("message", "bot");
+  msg.textContent = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function responderPergunta(pergunta) {
-  pergunta = pergunta.toLowerCase();
-  let resposta = "Desculpe, não encontrei informações sobre isso ainda.";
-
-  for (const chave in baseConhecimento) {
-    if (pergunta.includes(chave.toLowerCase())) {
-      resposta = baseConhecimento[chave];
-      break;
-    }
-  }
-
-  return resposta;
+// função para exibir mensagens sequencialmente
+function mostrarMensagens(seq, delay = 1200) {
+  if (seq >= mensagens.length) return;
+  addMessage(mensagens[seq]);
+  setTimeout(() => mostrarMensagens(seq + 1, delay), delay);
 }
 
-async function enviarMensagem() {
-  const input = document.getElementById("user-input");
-  const texto = input.value.trim();
-  if (!texto) return;
-  addMessage(texto, "user");
-  input.value = "";
-
-  addMessage("Analisando sua pergunta...", "bot");
-  setTimeout(() => {
-    document.querySelector("#chat-box .bot:last-child").remove();
-    const resposta = responderPergunta(texto);
-    addMessage(resposta, "bot");
-  }, 700);
-}
-
-document.getElementById("send-btn").onclick = enviarMensagem;
-document.getElementById("user-input").addEventListener("keypress", e => {
-  if (e.key === "Enter") enviarMensagem();
-});
-
-// Mensagem inicial
-addMessage("Olá! 👋 Sou o assistente da Lixeira Inteligente. Pergunte-me sobre montagem, Arduino, servos, câmera ou materiais!", "bot");
-
-// Carrega os dados JSON
-carregarDados();
+// iniciar exibição automática
+mostrarMensagens(0);
 </script>
 </body>
 </html>
