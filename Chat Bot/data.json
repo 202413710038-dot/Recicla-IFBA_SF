@@ -1,9 +1,11 @@
-{
-  "introducao": "A Lixeira Inteligente é um projeto que utiliza Arduino Uno, servos motores e uma câmera para identificar materiais recicláveis como plástico, metal e papel.",
-  "arduino": "O Arduino Uno é o microcontrolador principal, responsável por controlar os servos motores e receber os sinais da câmera de reconhecimento.",
-  "servos": "Os servos motores são usados para abrir e fechar a tampa da lixeira. É possível usar um ou dois servos, dependendo do tamanho da tampa.",
-  "camera": "A câmera capta a imagem do material descartado e a IA identifica se é plástico, metal ou papel, direcionando o descarte correto.",
-  "materiais": "Os materiais reconhecidos são plástico, metal e papel. Cada tipo de material aciona um movimento diferente dos servos.",
-  "montagem": "A montagem é feita em uma protoboard, conectando o Arduino aos servos e à câmera. Recomenda-se usar uma fonte externa para alimentar os motores.",
-  "problemas_comuns": "Problemas comuns incluem falhas na alimentação dos servos e erros de reconhecimento da câmera. Verifique sempre as conexões e a iluminação do ambiente."
-}
+[
+  {
+    "introducao": "A Lixeira Inteligente é um projeto que utiliza Arduino Uno, servos motores e uma câmera para identificar materiais recicláveis como plástico, metal e papel.",
+    "arduino": "O Arduino Uno é o microcontrolador principal, responsável por controlar os servos motores e receber os sinais da câmera de reconhecimento.",
+    "servos": "Os servos motores são usados para abrir e fechar a tampa da lixeira. É possível usar um ou dois servos, dependendo do tamanho da tampa.",
+    "camera": "A câmera capta a imagem do material descartado e a IA identifica se é plástico, metal ou papel, direcionando o descarte correto.",
+    "materiais": "Os materiais reconhecidos são plástico, metal e papel. Cada tipo de material aciona um movimento diferente dos servos.",
+    "montagem": "A montagem é feita em uma protoboard, conectando o Arduino aos servos e à câmera. Recomenda-se usar uma fonte externa para alimentar os motores.",
+    "problemas_comuns": "Problemas comuns incluem falhas na alimentação dos servos e erros de reconhecimento da câmera. Verifique sempre as conexões e a iluminação do ambiente."
+  }
+]
