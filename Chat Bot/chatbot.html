@@ -34,6 +34,7 @@ body {
   padding: 10px;
   border-radius: 10px;
   max-width: 80%;
+  white-space: pre-line; /* permite quebra de linha automática */
 }
 .user {
   background: #007bff;
@@ -66,6 +67,18 @@ body {
   font-style: italic;
   color: #555;
 }
+#restart-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+#restart-btn:hover {
+  background: #218838;
+}
 </style>
 </head>
 <body>
@@ -74,10 +87,10 @@ body {
 </div>
 
 <script>
-// Chatbot com sub-opções e animação de digitando
+// Chatbot com sub-opções, linhas separadas e reinício
 const chatBox = document.getElementById("chat-box");
 
-// Respostas melhoradas com sub-opções
+// Respostas com sub-opções
 const respostas = {
   "Como Funciona": {
     texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
@@ -107,7 +120,7 @@ const respostas = {
   }
 };
 
-// Mantém opções disponíveis globalmente
+// Todas as opções disponíveis
 let opcoesDisponiveis = new Set(Object.keys(respostas));
 
 // Função para adicionar mensagem
@@ -122,9 +135,16 @@ function addMessage(text, sender = "bot") {
 
 // Função para adicionar botões
 function addButtons(parentMsg, opcoes) {
-  if (!opcoes || opcoes.length === 0) return;
+  if (!opcoes || opcoes.length === 0) {
+    // Se não houver mais opções disponíveis, mostra botão reiniciar
+    const restartBtn = document.createElement("button");
+    restartBtn.id = "restart-btn";
+    restartBtn.textContent = "Reiniciar Chat";
+    restartBtn.addEventListener("click", restartChat);
+    parentMsg.after(restartBtn);
+    return;
+  }
 
-  // Remove botões antigos do mesmo parent
   const nextElem = parentMsg.nextSibling;
   if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
     nextElem.remove();
@@ -141,20 +161,20 @@ function addButtons(parentMsg, opcoes) {
     btn.textContent = key;
 
     btn.addEventListener("click", () => {
-      // Remove a opção permanentemente
       opcoesDisponiveis.delete(key);
-      // Remove os botões atuais
       buttonContainer.remove();
-      // Mensagem do usuário
       addMessage(key, "user");
-      // Animação digitando
       const typingMsg = addMessage("Digitando...", "bot");
       typingMsg.classList.add("typing");
 
       setTimeout(() => {
         typingMsg.remove();
         const botMsg = addMessage(respostas[key].texto, "bot");
-        addButtons(botMsg, respostas[key].subOpcoes);
+        // Pega apenas sub-opções que ainda estão disponíveis
+        const subOpcoesRestantes = respostas[key].subOpcoes.filter(opt => opcoesDisponiveis.has(opt));
+        // Oferece também outras opções principais ainda não clicadas
+        const proximasOpcoes = [...subOpcoesRestantes, ...[...opcoesDisponiveis].filter(opt => !respostas[key].subOpcoes.includes(opt))];
+        addButtons(botMsg, proximasOpcoes);
       }, 800);
     });
 
@@ -165,9 +185,16 @@ function addButtons(parentMsg, opcoes) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Mensagem inicial
-const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
-addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
+// Reiniciar chat
+function restartChat() {
+  chatBox.innerHTML = "";
+  opcoesDisponiveis = new Set(Object.keys(respostas));
+  const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
+  addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
+}
+
+// Inicia chat
+restartChat();
 </script>
 </body>
 </html>
