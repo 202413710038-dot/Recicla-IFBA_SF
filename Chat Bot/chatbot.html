@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chatbot Lixeira Inteligente</title>
+<title>Chatbot da Lixeira Inteligente</title>
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -34,7 +34,7 @@ body {
   padding: 10px;
   border-radius: 10px;
   max-width: 80%;
-  white-space: pre-wrap;
+  white-space: pre-wrap; 
 }
 .user {
   background: #007bff;
@@ -89,23 +89,40 @@ body {
 <script>
 // --- Dados do chatbot ---
 const respostas = {
-  "Oi": { texto: "Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.", subOpcoes: ["Como Funciona", "Componentes", "Problemas"] },
-  "Como Funciona": { texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).", subOpcoes: ["Tampa"] },
-  "Componentes": { texto: `Você vai precisar de:
+  "Oi": {
+    texto: "Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.",
+    subOpcoes: ["Como Funciona", "Componentes", "Problemas"]
+  },
+  "Como Funciona": {
+    texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
+    subOpcoes: ["Tampa"]
+  },
+  "Componentes": {
+    texto: `Você vai precisar de:
 - 1 Arduino Uno
 - 1 Protoboard
 - 1 ou 2 Servos motores
 - 1 Câmera (USB ou módulo)
 - Fios jumper
-- Fonte 5V`, subOpcoes: ["Conexões"] },
-  "Problemas": { texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).", subOpcoes: [] },
-  "Tampa": { texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).", subOpcoes: [] },
-  "Conexões": { texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.", subOpcoes: [] }
+- Fonte 5V`,
+    subOpcoes: ["Conexões"]
+  },
+  "Problemas": {
+    texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
+    subOpcoes: []
+  },
+  "Tampa": {
+    texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
+    subOpcoes: []
+  },
+  "Conexões": {
+    texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
+    subOpcoes: []
+  }
 };
 
-// Estado do chatbot
+// Todas as opções disponíveis
 let opcoesDisponiveis = new Set(Object.keys(respostas));
-let opcoesBloqueadas = new Set(); // opções principais bloqueadas até sub-opções serem clicadas
 
 // Função para adicionar mensagem
 function addMessage(text, sender = "bot") {
@@ -117,35 +134,9 @@ function addMessage(text, sender = "bot") {
   return msg;
 }
 
-// Calcula opções realmente disponíveis
-function getOpcoesDisponiveis() {
-  const disponiveis = [];
-
-  // Sub-opções de seções selecionadas primeiro
-  for (let key of opcoesDisponiveis) {
-    // se é sub-opção e seu pai está bloqueado, prioriza
-    const pai = Object.keys(respostas).find(p => respostas[p].subOpcoes.includes(key));
-    if (pai && opcoesBloqueadas.has(pai)) {
-      disponiveis.push(key);
-    }
-  }
-
-  if (disponiveis.length > 0) return disponiveis;
-
-  // Libera opções principais que não estão bloqueadas
-  for (let key of opcoesDisponiveis) {
-    if (!Object.keys(respostas).some(p => respostas[p].subOpcoes.includes(key))) {
-      disponiveis.push(key);
-    }
-  }
-
-  return disponiveis;
-}
-
-// Adiciona botões
-function addButtons(parentMsg) {
-  const opcoes = getOpcoesDisponiveis();
-  if (opcoes.length === 0) {
+// Função para adicionar botões
+function addButtons(parentMsg, opcoes) {
+  if (!opcoes || opcoes.length === 0) {
     if (opcoesDisponiveis.size === 0) {
       const restartBtn = document.createElement("button");
       restartBtn.id = "restart-btn";
@@ -157,12 +148,16 @@ function addButtons(parentMsg) {
   }
 
   const nextElem = parentMsg.nextSibling;
-  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) nextElem.remove();
+  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
+    nextElem.remove();
+  }
 
   const buttonContainer = document.createElement("div");
   buttonContainer.classList.add("button-container");
 
   opcoes.forEach(key => {
+    if (!opcoesDisponiveis.has(key)) return;
+
     const btn = document.createElement("button");
     btn.classList.add("topic-btn");
     btn.textContent = key;
@@ -172,9 +167,6 @@ function addButtons(parentMsg) {
       buttonContainer.remove();
       addMessage(key, "user");
 
-      // Bloqueia opção principal até sub-opções serem respondidas
-      if (respostas[key].subOpcoes.length > 0) opcoesBloqueadas.add(key);
-
       const typingMsg = addMessage("Digitando...", "bot");
       typingMsg.classList.add("typing");
 
@@ -182,14 +174,17 @@ function addButtons(parentMsg) {
         typingMsg.remove();
         const botMsg = addMessage(respostas[key].texto, "bot");
 
-        // Se todas sub-opções da seção forem respondidas, desbloqueia
-        if (Object.keys(respostas).some(p => respostas[p].subOpcoes.includes(key))) {
-          const pai = Object.keys(respostas).find(p => respostas[p].subOpcoes.includes(key));
-          const todasSubUsadas = respostas[pai].subOpcoes.every(sub => !opcoesDisponiveis.has(sub));
-          if (todasSubUsadas) opcoesBloqueadas.delete(pai);
-        }
+        // Sub-opções que ainda não foram clicadas
+        const subOpcoesRestantes = respostas[key].subOpcoes.filter(opt => opcoesDisponiveis.has(opt));
 
-        addButtons(botMsg);
+        // Se houver sub-opções pendentes, mostre apenas elas
+        if (subOpcoesRestantes.length > 0) {
+          addButtons(botMsg, subOpcoesRestantes);
+        } else {
+          // Caso não haja sub-opções pendentes, ofereça próximas opções principais
+          const proximasOpcoes = [...opcoesDisponiveis].filter(opt => !Object.values(respostas).some(r => r.subOpcoes.includes(opt)));
+          addButtons(botMsg, proximasOpcoes);
+        }
       }, 800);
     });
 
@@ -204,9 +199,8 @@ function addButtons(parentMsg) {
 function restartChat() {
   chatBox.innerHTML = "";
   opcoesDisponiveis = new Set(Object.keys(respostas));
-  opcoesBloqueadas = new Set();
   const initialMsg = addMessage(respostas["Oi"].texto, "bot");
-  addButtons(initialMsg);
+  addButtons(initialMsg, respostas["Oi"].subOpcoes);
 }
 
 // Inicia chat
