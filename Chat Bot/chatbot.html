@@ -62,6 +62,10 @@ body {
 .topic-btn:hover {
   background: #0056b3;
 }
+.typing {
+  font-style: italic;
+  color: #555;
+}
 </style>
 </head>
 <body>
@@ -70,7 +74,7 @@ body {
 </div>
 
 <script>
-// Chatbot com botões que desaparecem permanentemente
+// Chatbot com opções únicas e animação "digitando..."
 const chatBox = document.getElementById("chat-box");
 
 // Respostas pré-programadas
@@ -97,15 +101,15 @@ function addMessage(text, sender = "bot") {
   return msg;
 }
 
-// Função para adicionar botões abaixo de uma mensagem
+// Função para criar botões abaixo da mensagem do bot
 function addButtons(parentMsg) {
-  // Remove qualquer botão da mensagem anterior
-  const prevButtons = parentMsg.nextSibling;
-  if (prevButtons && prevButtons.classList && prevButtons.classList.contains("button-container")) {
-    prevButtons.remove();
+  // Remove botões antigos do mesmo parent
+  const nextElem = parentMsg.nextSibling;
+  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
+    nextElem.remove();
   }
 
-  if (opcoesDisponiveis.length === 0) return; // nada a mostrar
+  if (opcoesDisponiveis.length === 0) return; // nenhuma opção restante
 
   const buttonContainer = document.createElement("div");
   buttonContainer.classList.add("button-container");
@@ -116,18 +120,21 @@ function addButtons(parentMsg) {
     btn.textContent = key;
 
     btn.addEventListener("click", () => {
-      // Remove o botão clicado da lista de opções disponíveis
+      // Remove opção selecionada permanentemente
       opcoesDisponiveis = opcoesDisponiveis.filter(opt => opt !== key);
-      // Remove os botões atuais da mensagem
+      // Remove botões atuais
       buttonContainer.remove();
       // Mensagem do usuário
       addMessage(key, "user");
-      // Resposta do bot
+      // Mensagem "digitando..."
+      const typingMsg = addMessage("Digitando...", "bot");
+      typingMsg.classList.add("typing");
+
       setTimeout(() => {
+        typingMsg.remove();
         const botMsg = addMessage(respostas[key], "bot");
-        // Adiciona novos botões abaixo da resposta
         addButtons(botMsg);
-      }, 400);
+      }, 800); // tempo de "digitando..."
     });
 
     buttonContainer.appendChild(btn);
@@ -139,7 +146,6 @@ function addButtons(parentMsg) {
 
 // Mensagem inicial
 const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
-// Adiciona os botões iniciais
 addButtons(initialMsg);
 </script>
 </body>
