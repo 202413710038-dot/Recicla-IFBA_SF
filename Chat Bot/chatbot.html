@@ -75,6 +75,7 @@ body {
 </div>
 
 <script>
+// Chatbot com sub-opções e botão "Fazer outra pergunta"
 const chatBox = document.getElementById("chat-box");
 
 const respostas = {
@@ -108,7 +109,7 @@ const respostas = {
 
 let opcoesDisponiveis = new Set(Object.keys(respostas));
 
-// Função para adicionar mensagem
+// Adiciona mensagem no chat
 function addMessage(text, sender = "bot") {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
@@ -118,7 +119,7 @@ function addMessage(text, sender = "bot") {
   return msg;
 }
 
-// Função para adicionar botões
+// Adiciona botões
 function addButtons(parentMsg, opcoes) {
   if (!opcoes || opcoes.length === 0) return;
 
@@ -149,31 +150,9 @@ function addButtons(parentMsg, opcoes) {
         typingMsg.remove();
         const botMsg = addMessage(respostas[key].texto, "bot");
 
-        // Se a opção clicada tiver sub-opções, exibi-las
-        if (respostas[key].subOpcoes && respostas[key].subOpcoes.length > 0) {
-          addButtons(botMsg, respostas[key].subOpcoes);
-        } else {
-          // Verifica se todas as sub-opções de uma seção foram clicadas
-          const todasSubOpcClicadas = Object.values(respostas)
-            .filter(r => r.subOpcoes && r.subOpcoes.length > 0)
-            .every(r => r.subOpcoes.every(s => !opcoesDisponiveis.has(s)));
-
-          // Se todas sub-opções foram clicadas, adicionar botão "Fazer outra pergunta"
-          if (todasSubOpcClicadas) {
-            const btnOutraPergunta = document.createElement("button");
-            btnOutraPergunta.classList.add("topic-btn");
-            btnOutraPergunta.textContent = "Fazer outra pergunta";
-            btnOutraPergunta.addEventListener("click", () => {
-              btnOutraPergunta.remove();
-              addMessage("Perfeito, o que mais deseja perguntar?", "bot");
-              addButtons(addMessage("", "bot"), Array.from(opcoesDisponiveis));
-            });
-            botMsg.after(btnOutraPergunta);
-          } else {
-            // Oferece próximas opções disponíveis
-            addButtons(botMsg, Array.from(opcoesDisponiveis));
-          }
-        }
+        // Adiciona botão "Fazer outra pergunta" após a resposta
+        addFazerOutraPergunta(botMsg);
+        addButtons(botMsg, respostas[key].subOpcoes);
       }, 800);
     });
 
@@ -181,6 +160,29 @@ function addButtons(parentMsg, opcoes) {
   });
 
   parentMsg.after(buttonContainer);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Botão "Fazer outra pergunta"
+function addFazerOutraPergunta(parentMsg) {
+  const container = document.createElement("div");
+  container.classList.add("button-container");
+
+  const btn = document.createElement("button");
+  btn.classList.add("topic-btn");
+  btn.textContent = "Fazer outra pergunta";
+
+  btn.addEventListener("click", () => {
+    container.remove();
+    addMessage("Perfeito, o que mais deseja perguntar?", "bot");
+
+    // Mostra apenas opções principais ainda disponíveis
+    const principais = ["Como Funciona", "Componentes", "Problemas"].filter(op => opcoesDisponiveis.has(op));
+    addButtons(parentMsg, principais);
+  });
+
+  container.appendChild(btn);
+  parentMsg.after(container);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
