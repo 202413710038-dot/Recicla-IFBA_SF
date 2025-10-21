@@ -1,68 +1,16 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chatbot - Lixeira Inteligente</title>
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #007bff, #00c6ff);
-  height: 100vh; margin: 0;
-  display: flex; justify-content: center; align-items: center;
-}
-#chat-container {
-  width: 420px; height: 640px;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-  display: flex; flex-direction: column; overflow: hidden;
-}
-#header {
-  background: #007bff; color: white; text-align: center;
-  padding: 15px; font-weight: bold; font-size: 20px;
-}
-#chat-box {
-  flex: 1; padding: 15px; overflow-y: auto;
-  display: flex; flex-direction: column;
-}
-.message {
-  margin: 6px 0; padding: 10px 14px;
-  border-radius: 15px; max-width: 80%;
-}
-.user { align-self: flex-end; background: #007bff; color: white; }
-.bot { align-self: flex-start; background: #f1f0f0; color: black; }
-#input-area {
-  display: flex; border-top: 1px solid #ccc;
-}
-#user-input {
-  flex: 1; border: none; padding: 12px; font-size: 15px; outline: none;
-}
-#send-btn {
-  background: #007bff; color: white; border: none;
-  padding: 0 18px; font-size: 16px; cursor: pointer;
-}
-#send-btn:hover { background: #0056b3; }
-</style>
-</head>
-<body>
-<div id="chat-container">
-  <div id="header">🤖 Lixeira Inteligente</div>
-  <div id="chat-box"></div>
-  <div id="input-area">
-    <input type="text" id="user-input" placeholder="Pergunte sobre a lixeira...">
-    <button id="send-btn">Enviar</button>
-  </div>
-</div>
-
 <script>
-const REPO_URL = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/dados.json";
+const REPO_URL = "https://raw.githubusercontent.com/SEU_USUARIO/Recicla-IFBA-SF/main/Chat%20Bot/dados.json";
 
 let baseConhecimento = {};
 
 async function carregarDados() {
-  const res = await fetch(REPO_URL);
-  baseConhecimento = await res.json();
+  try {
+    const res = await fetch(REPO_URL);
+    baseConhecimento = await res.json();
+    console.log("Dados carregados com sucesso:", baseConhecimento);
+  } catch (err) {
+    console.error("Erro ao carregar dados:", err);
+  }
 }
 
 function addMessage(text, sender) {
@@ -78,7 +26,7 @@ function responderPergunta(pergunta) {
   let resposta = "Desculpe, não encontrei informações sobre isso ainda.";
 
   for (const chave in baseConhecimento) {
-    if (pergunta.includes(chave)) {
+    if (pergunta.includes(chave.toLowerCase())) {
       resposta = baseConhecimento[chave];
       break;
     }
@@ -107,10 +55,9 @@ document.getElementById("user-input").addEventListener("keypress", e => {
   if (e.key === "Enter") enviarMensagem();
 });
 
+// Mensagem inicial
 addMessage("Olá! 👋 Sou o assistente da Lixeira Inteligente. Pergunte-me sobre montagem, Arduino, servos, câmera ou materiais!", "bot");
 
-carregarDados(data.json);
+// Carrega os dados JSON
+carregarDados();
 </script>
-</body>
-</html>
-
