@@ -75,12 +75,11 @@ body {
 </div>
 
 <script>
-// --- Dados atualizados ---
+// --- Dados ---
 const respostas = {
-  // Principais
   "Como Funciona": {
     texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
-    subOpcoes: ["Tampa"] // sub-dado
+    subOpcoes: ["Tampa"]
   },
   "Componentes": {
     texto: `Você vai precisar de:
@@ -90,13 +89,12 @@ const respostas = {
 - 1 Câmera (USB ou módulo)
 - Fios jumper
 - Fonte 5V`,
-    subOpcoes: ["Conexões"] // sub-dado
+    subOpcoes: ["Conexões"]
   },
   "Problemas": {
     texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
     subOpcoes: []
   },
-  // Sub-dados
   "Tampa": {
     texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
     subOpcoes: []
