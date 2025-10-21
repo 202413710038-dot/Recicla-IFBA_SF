@@ -50,6 +50,7 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
+  justify-content: center;
 }
 .topic-btn {
   background: #007bff;
@@ -67,59 +68,50 @@ body {
 <body>
 <div id="chat-container">
   <div id="chat-box"></div>
+  <div id="button-area"></div>
 </div>
 
 <script>
 // --- Chatbot com botões ---
 const chatBox = document.getElementById("chat-box");
+const buttonArea = document.getElementById("button-area");
 
 // respostas pré-programadas
 const respostas = {
-  oi: "Olá! Eu sou o assistente da Lixeira Inteligente. Posso te ajudar a entender como ela funciona.",
-  funcionamento: "A Lixeira Inteligente usa Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
-  componentes: "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera (USB ou módulo), fios jumper e fonte 5V.",
-  ligacao: "Conecte o servo ao pino digital do Arduino (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
-  ia: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.",
-  tampa: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
-  problemas: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A)."
+  Oi: "Olá! Eu sou o assistente da Lixeira Inteligente. Posso te ajudar a entender como ela funciona.",
+  "Como Funciona": "A Lixeira Inteligente usa um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
+  Componentes: "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera (USB ou módulo), fios jumper e fonte 5V.",
+  Conexoes: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
+  IA: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.",
+  Tampa: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
+  Problemas: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A)."
 };
 
+// criar botões para cada tópico
+Object.keys(respostas).forEach(key => {
+  const btn = document.createElement("button");
+  btn.classList.add("topic-btn");
+  btn.textContent = key;
+  btn.addEventListener("click", () => {
+    // mensagem do usuário
+    addMessage(key, "user");
+    // resposta do bot
+    setTimeout(() => addMessage(respostas[key], "bot"), 400);
+  });
+  buttonArea.appendChild(btn);
+});
+
 // função para adicionar mensagem
-function addMessage(text, sender = "bot", withButtons = false) {
-  // cria mensagem
+function addMessage(text, sender) {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
   msg.textContent = text;
   chatBox.appendChild(msg);
-
-  // se a mensagem for do bot, adiciona botões
-  if (sender === "bot" && withButtons) {
-    const buttonArea = document.createElement("div");
-    buttonArea.id = "button-area";
-
-    // criar botões para cada tópico
-    Object.keys(respostas).forEach(key => {
-      const btn = document.createElement("button");
-      btn.classList.add("topic-btn");
-      btn.textContent = key.charAt(0).toUpperCase() + key.slice(1);
-      btn.dataset.topic = key;
-      btn.addEventListener("click", () => {
-        // adiciona mensagem do usuário
-        addMessage(btn.textContent, "user");
-        // adiciona resposta do bot
-        setTimeout(() => addMessage(respostas[key], "bot", true), 400);
-      });
-      buttonArea.appendChild(btn);
-    });
-
-    chatBox.appendChild(buttonArea);
-  }
-
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// mensagem inicial com botões
-addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA, servos ou problemas.", "bot", true);
+// mensagem inicial
+addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
 </script>
 </body>
 </html>
