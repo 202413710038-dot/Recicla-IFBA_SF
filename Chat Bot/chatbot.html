@@ -34,7 +34,7 @@ body {
   padding: 10px;
   border-radius: 10px;
   max-width: 80%;
-  white-space: pre-wrap; /* permite quebra de linha */
+  white-space: pre-wrap; 
 }
 .user {
   background: #007bff;
@@ -87,10 +87,7 @@ body {
 </div>
 
 <script>
-// Chatbot com sub-opções, listas e reinício
-const chatBox = document.getElementById("chat-box");
-
-// Respostas com sub-opções
+// --- Dados do chatbot ---
 const respostas = {
   "Oi": {
     texto: "Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.",
@@ -124,7 +121,7 @@ const respostas = {
   }
 };
 
-// Mantém todas as opções disponíveis
+// Todas as opções disponíveis
 let opcoesDisponiveis = new Set(Object.keys(respostas));
 
 // Função para adicionar mensagem
@@ -141,7 +138,6 @@ function addMessage(text, sender = "bot") {
 function addButtons(parentMsg, opcoes) {
   if (!opcoes || opcoes.length === 0) {
     if (opcoesDisponiveis.size === 0) {
-      // Mostrar botão reiniciar
       const restartBtn = document.createElement("button");
       restartBtn.id = "restart-btn";
       restartBtn.textContent = "Reiniciar Chat";
@@ -151,7 +147,6 @@ function addButtons(parentMsg, opcoes) {
     return;
   }
 
-  // Remove botões antigos
   const nextElem = parentMsg.nextSibling;
   if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
     nextElem.remove();
@@ -171,17 +166,25 @@ function addButtons(parentMsg, opcoes) {
       opcoesDisponiveis.delete(key);
       buttonContainer.remove();
       addMessage(key, "user");
+
       const typingMsg = addMessage("Digitando...", "bot");
       typingMsg.classList.add("typing");
 
       setTimeout(() => {
         typingMsg.remove();
         const botMsg = addMessage(respostas[key].texto, "bot");
-        // Obter sub-opções ainda disponíveis
+
+        // Sub-opções que ainda não foram clicadas
         const subOpcoesRestantes = respostas[key].subOpcoes.filter(opt => opcoesDisponiveis.has(opt));
-        // Oferecer também outras opções principais ainda não clicadas
-        const proximasOpcoes = [...subOpcoesRestantes, ...[...opcoesDisponiveis].filter(opt => !respostas[key].subOpcoes.includes(opt))];
-        addButtons(botMsg, proximasOpcoes);
+
+        // Se houver sub-opções pendentes, mostre apenas elas
+        if (subOpcoesRestantes.length > 0) {
+          addButtons(botMsg, subOpcoesRestantes);
+        } else {
+          // Caso não haja sub-opções pendentes, ofereça próximas opções principais
+          const proximasOpcoes = [...opcoesDisponiveis].filter(opt => !Object.values(respostas).some(r => r.subOpcoes.includes(opt)));
+          addButtons(botMsg, proximasOpcoes);
+        }
       }, 800);
     });
 
@@ -205,4 +208,3 @@ restartChat();
 </script>
 </body>
 </html>
-
