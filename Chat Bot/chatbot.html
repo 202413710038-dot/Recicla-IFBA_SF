@@ -87,8 +87,9 @@ body {
 </div>
 
 <script>
-// --- Dados ---
+// --- Dados do chatbot ---
 const respostas = {
+  "Oi": { texto: "Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.", subOpcoes: ["Como Funciona", "Componentes", "Problemas"] },
   "Como Funciona": { texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).", subOpcoes: ["Tampa"] },
   "Componentes": { texto: `Você vai precisar de:
 - 1 Arduino Uno
@@ -103,11 +104,11 @@ const respostas = {
 };
 
 // Estado do chatbot
-let clicados = new Set();
-let iniciou = false;
+let opcoesDisponiveis = new Set(Object.keys(respostas));
+let opcoesBloqueadas = new Set(); // opções principais bloqueadas até sub-opções serem clicadas
 
 // Função para adicionar mensagem
-function addMessage(text, sender="bot") {
+function addMessage(text, sender = "bot") {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
   msg.textContent = text;
@@ -116,24 +117,36 @@ function addMessage(text, sender="bot") {
   return msg;
 }
 
-// Função para obter opções disponíveis respeitando hierarquia
+// Calcula opções realmente disponíveis
 function getOpcoesDisponiveis() {
-  // Prioridade: sub-opções de seções clicadas mas não completas
-  for (let key of clicados) {
-    const sub = respostas[key]?.subOpcoes.filter(s => !clicados.has(s));
-    if (sub && sub.length > 0) return sub;
+  const disponiveis = [];
+
+  // Sub-opções de seções selecionadas primeiro
+  for (let key of opcoesDisponiveis) {
+    // se é sub-opção e seu pai está bloqueado, prioriza
+    const pai = Object.keys(respostas).find(p => respostas[p].subOpcoes.includes(key));
+    if (pai && opcoesBloqueadas.has(pai)) {
+      disponiveis.push(key);
+    }
   }
 
-  // Se não houver sub-opções pendentes, liberar principais não clicadas
-  const opcoesPrincipais = Object.keys(respostas).filter(k => !clicados.has(k));
-  return opcoesPrincipais;
+  if (disponiveis.length > 0) return disponiveis;
+
+  // Libera opções principais que não estão bloqueadas
+  for (let key of opcoesDisponiveis) {
+    if (!Object.keys(respostas).some(p => respostas[p].subOpcoes.includes(key))) {
+      disponiveis.push(key);
+    }
+  }
+
+  return disponiveis;
 }
 
-// Função para adicionar botões
+// Adiciona botões
 function addButtons(parentMsg) {
   const opcoes = getOpcoesDisponiveis();
   if (opcoes.length === 0) {
-    if (clicados.size === Object.keys(respostas).length) {
+    if (opcoesDisponiveis.size === 0) {
       const restartBtn = document.createElement("button");
       restartBtn.id = "restart-btn";
       restartBtn.textContent = "Reiniciar Chat";
@@ -146,47 +159,58 @@ function addButtons(parentMsg) {
   const nextElem = parentMsg.nextSibling;
   if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) nextElem.remove();
 
-  const container = document.createElement("div");
-  container.classList.add("button-container");
+  const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add("button-container");
 
-  opcoes.forEach(op => {
+  opcoes.forEach(key => {
     const btn = document.createElement("button");
     btn.classList.add("topic-btn");
-    btn.textContent = op;
+    btn.textContent = key;
 
     btn.addEventListener("click", () => {
-      clicados.add(op);
-      container.remove();
-      addMessage(op, "user");
+      opcoesDisponiveis.delete(key);
+      buttonContainer.remove();
+      addMessage(key, "user");
+
+      // Bloqueia opção principal até sub-opções serem respondidas
+      if (respostas[key].subOpcoes.length > 0) opcoesBloqueadas.add(key);
 
       const typingMsg = addMessage("Digitando...", "bot");
       typingMsg.classList.add("typing");
 
       setTimeout(() => {
         typingMsg.remove();
-        const botMsg = addMessage(respostas[op].texto, "bot");
+        const botMsg = addMessage(respostas[key].texto, "bot");
+
+        // Se todas sub-opções da seção forem respondidas, desbloqueia
+        if (Object.keys(respostas).some(p => respostas[p].subOpcoes.includes(key))) {
+          const pai = Object.keys(respostas).find(p => respostas[p].subOpcoes.includes(key));
+          const todasSubUsadas = respostas[pai].subOpcoes.every(sub => !opcoesDisponiveis.has(sub));
+          if (todasSubUsadas) opcoesBloqueadas.delete(pai);
+        }
+
         addButtons(botMsg);
       }, 800);
     });
 
-    container.appendChild(btn);
+    buttonContainer.appendChild(btn);
   });
 
-  parentMsg.after(container);
+  parentMsg.after(buttonContainer);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 // Reiniciar chat
 function restartChat() {
   chatBox.innerHTML = "";
-  clicados = new Set();
-  iniciou = true;
-  const initialMsg = addMessage("Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.", "bot");
+  opcoesDisponiveis = new Set(Object.keys(respostas));
+  opcoesBloqueadas = new Set();
+  const initialMsg = addMessage(respostas["Oi"].texto, "bot");
   addButtons(initialMsg);
 }
 
 // Inicia chat
-if (!iniciou) restartChat();
+restartChat();
 </script>
 </body>
 </html>
