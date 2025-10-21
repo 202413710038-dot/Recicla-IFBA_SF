@@ -74,22 +74,43 @@ body {
 </div>
 
 <script>
-// Chatbot com opções únicas e animação "digitando..."
+// Chatbot com sub-opções
 const chatBox = document.getElementById("chat-box");
 
-// Respostas pré-programadas
+// Estrutura de respostas com sub-opções
 const respostas = {
-  Oi: "Olá! Eu sou o assistente da Lixeira Inteligente. Posso te ajudar a entender como ela funciona.",
-  "Como Funciona": "A Lixeira Inteligente usa um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
-  Componentes: "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera (USB ou módulo), fios jumper e fonte 5V.",
-  Conexoes: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
-  IA: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.",
-  Tampa: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
-  Problemas: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A)."
+  Oi: {
+    texto: "Olá! Eu sou o assistente da Lixeira Inteligente. Posso te ajudar a entender como ela funciona.",
+    subOpcoes: ["Como Funciona", "Componentes", "IA"]
+  },
+  "Como Funciona": {
+    texto: "A Lixeira Inteligente usa um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
+    subOpcoes: ["Tampa", "Conexoes"]
+  },
+  Componentes: {
+    texto: "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera (USB ou módulo), fios jumper e fonte 5V.",
+    subOpcoes: ["Problemas"]
+  },
+  Conexoes: {
+    texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
+    subOpcoes: ["Problemas"]
+  },
+  IA: {
+    texto: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.",
+    subOpcoes: ["Como Funciona", "Componentes"]
+  },
+  Tampa: {
+    texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
+    subOpcoes: []
+  },
+  Problemas: {
+    texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
+    subOpcoes: []
+  }
 };
 
-// Mantém o estado das opções disponíveis
-let opcoesDisponiveis = Object.keys(respostas);
+// Mantém todas as opções disponíveis globalmente
+let opcoesDisponiveis = new Set(Object.keys(respostas));
 
 // Função para adicionar mensagem
 function addMessage(text, sender = "bot") {
@@ -101,40 +122,43 @@ function addMessage(text, sender = "bot") {
   return msg;
 }
 
-// Função para criar botões abaixo da mensagem do bot
-function addButtons(parentMsg) {
+// Função para adicionar botões
+function addButtons(parentMsg, opcoes) {
+  if (!opcoes || opcoes.length === 0) return;
+
   // Remove botões antigos do mesmo parent
   const nextElem = parentMsg.nextSibling;
   if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
     nextElem.remove();
   }
 
-  if (opcoesDisponiveis.length === 0) return; // nenhuma opção restante
-
   const buttonContainer = document.createElement("div");
   buttonContainer.classList.add("button-container");
 
-  opcoesDisponiveis.forEach(key => {
+  opcoes.forEach(key => {
+    // só adiciona se ainda estiver disponível
+    if (!opcoesDisponiveis.has(key)) return;
+
     const btn = document.createElement("button");
     btn.classList.add("topic-btn");
     btn.textContent = key;
 
     btn.addEventListener("click", () => {
-      // Remove opção selecionada permanentemente
-      opcoesDisponiveis = opcoesDisponiveis.filter(opt => opt !== key);
-      // Remove botões atuais
+      // remove a opção permanentemente
+      opcoesDisponiveis.delete(key);
+      // remove botões atuais
       buttonContainer.remove();
-      // Mensagem do usuário
+      // mensagem do usuário
       addMessage(key, "user");
-      // Mensagem "digitando..."
+      // animação digitando
       const typingMsg = addMessage("Digitando...", "bot");
       typingMsg.classList.add("typing");
 
       setTimeout(() => {
         typingMsg.remove();
-        const botMsg = addMessage(respostas[key], "bot");
-        addButtons(botMsg);
-      }, 800); // tempo de "digitando..."
+        const botMsg = addMessage(respostas[key].texto, "bot");
+        addButtons(botMsg, respostas[key].subOpcoes);
+      }, 800);
     });
 
     buttonContainer.appendChild(btn);
@@ -146,7 +170,7 @@ function addButtons(parentMsg) {
 
 // Mensagem inicial
 const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA ou funcionamento.", "bot");
-addButtons(initialMsg);
+addButtons(initialMsg, ["Oi"]);
 </script>
 </body>
 </html>
