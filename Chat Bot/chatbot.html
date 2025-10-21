@@ -128,7 +128,7 @@ function addMessage(text, sender="bot") {
 // Fade progressivo suave a cada 2 mensagens
 function fadeOldMessages() {
   const messages = Array.from(chatBox.querySelectorAll(".message"));
-  const fadeStep = 0.15; // aumenta a cada 2 mensagens
+  const fadeStep = 0.15;
   let fadeLevel = fadeStep;
 
   for (let i = messages.length - 3; i >= 0; i -= 2) {
@@ -168,7 +168,7 @@ function addButtons(parentMsg, opcoes) {
         opcoesDisponiveis.delete(key);
         container.remove();
 
-        await new Promise(r => setTimeout(r, 500)); // delay após clicar
+        await new Promise(r => setTimeout(r, 500));
         await addMessage(key, "user");
 
         const typingMsg = await addMessage("Checando banco de dados...", "bot");
@@ -191,13 +191,12 @@ function addButtons(parentMsg, opcoes) {
     delay += 200;
   });
 
-  // Scroll para baixo ao aparecer os botões
   setTimeout(() => {
     chatBox.scrollTop = chatBox.scrollHeight;
   }, delay);
 }
 
-// Botão "Fazer outra pergunta" / "Reiniciar Chat"
+// Botão "Fazer outra pergunta" / "Adeus"
 function addFazerOutraPergunta(parentMsg) {
   const container = document.createElement("div");
   container.classList.add("button-container");
@@ -215,12 +214,11 @@ function addFazerOutraPergunta(parentMsg) {
       addButtons(novaMsg, principais);
     });
   } else {
-    btn.textContent = "Reiniciar Chat";
-    btn.addEventListener("click", () => {
-      chatBox.innerHTML = "";
-      opcoesDisponiveis = new Set(Object.keys(respostas));
-      const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
-      addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
+    btn.textContent = "Adeus";
+    btn.addEventListener("click", async () => {
+      container.remove();
+      await addMessage("Adeus!", "user");
+      await addMessage("Obrigado por analisar nosso projeto! Esperamos que tenha gostado e que a Lixeira Inteligente tenha ficado clara.", "bot");
     });
   }
 
