@@ -35,6 +35,9 @@ body {
   border-radius: 10px;
   max-width: 80%;
   white-space: pre-wrap;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease-out;
 }
 .user {
   background: #007bff;
@@ -59,6 +62,9 @@ body {
   padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
 .topic-btn:hover {
   background: #0056b3;
@@ -77,117 +83,167 @@ body {
 <script>
 const chatBox = document.getElementById("chat-box");
 
+const animDuration = 500;
+const typingDuration = 1000;
+
 const respostas = {
-  "Como Funciona": {
-    texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
-    subOpcoes: ["Tampa"]
-  },
-  "Componentes": {
-    texto: `Você vai precisar de:
+  "Como Funciona": { texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).", subOpcoes: ["Tampa", "IA"] },
+  "Componentes": { texto: `Você vai precisar de:
 - 1 Arduino Uno
 - 1 Protoboard
 - 1 ou 2 Servos motores
 - 1 Câmera (USB ou módulo)
 - Fios jumper
-- Fonte 5V`,
-    subOpcoes: ["Conexões"]
-  },
-  "Problemas": {
-    texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
-    subOpcoes: []
-  },
-  "Tampa": {
-    texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
-    subOpcoes: []
-  },
-  "Conexões": {
-    texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
-    subOpcoes: []
-  }
+- Fonte 5V`, subOpcoes: ["Conexões"] },
+  "Tampa": { texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).", subOpcoes: ["IA"] },
+  "IA": { texto: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.", subOpcoes: ["Tampa"] },
+  "Conexões": { texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.", subOpcoes: ["Problemas"] },
+  "Problemas": { texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).", subOpcoes: [] }
 };
 
 let opcoesDisponiveis = new Set(Object.keys(respostas));
 
-function addMessage(text, sender = "bot") {
-  const msg = document.createElement("div");
-  msg.classList.add("message", sender);
-  msg.textContent = text;
-  chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
-  return msg;
+function addMessage(text, sender="bot") {
+  return new Promise(resolve => {
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.textContent = text;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        msg.style.transform = "scale(1)";
+        msg.style.opacity = "1";
+      });
+    });
+
+    setTimeout(() => {
+      fadeOldMessages();
+      resolve(msg);
+    }, animDuration);
+  });
 }
 
+// Fade progressivo suave a cada 2 mensagens
+function fadeOldMessages() {
+  const messages = Array.from(chatBox.querySelectorAll(".message"));
+  const fadeStep = 0.15; // aumenta a cada 2 mensagens
+  let fadeLevel = fadeStep;
+
+  for (let i = messages.length - 3; i >= 0; i -= 2) {
+    messages[i].style.opacity = Math.max(0.2, 1 - fadeLevel);
+    messages[i].style.transition = "opacity 1s ease-out";
+    if (i-1 >=0) messages[i-1].style.opacity = Math.max(0.2, 1 - fadeLevel);
+    fadeLevel += fadeStep;
+  }
+}
+
+// Adiciona botões em sequência
 function addButtons(parentMsg, opcoes) {
   if (!opcoes || opcoes.length === 0) return;
 
-  const nextElem = parentMsg.nextSibling;
-  if (nextElem && nextElem.classList && nextElem.classList.contains("button-container")) {
-    nextElem.remove();
-  }
+  const container = document.createElement("div");
+  container.classList.add("button-container");
+  parentMsg.after(container);
 
-  const buttonContainer = document.createElement("div");
-  buttonContainer.classList.add("button-container");
-
+  let delay = 0;
   opcoes.forEach(key => {
     if (!opcoesDisponiveis.has(key)) return;
 
-    const btn = document.createElement("button");
-    btn.classList.add("topic-btn");
-    btn.textContent = key;
+    setTimeout(() => {
+      const btn = document.createElement("button");
+      btn.classList.add("topic-btn");
+      btn.textContent = key;
+      container.appendChild(btn);
 
-    btn.addEventListener("click", () => {
-      opcoesDisponiveis.delete(key);
-      buttonContainer.remove();
-      addMessage(key, "user");
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          btn.style.opacity = "1";
+          btn.style.transform = "translateY(0)";
+        });
+      });
 
-      const typingMsg = addMessage("Digitando...", "bot");
-      typingMsg.classList.add("typing");
+      btn.addEventListener("click", async () => {
+        opcoesDisponiveis.delete(key);
+        container.remove();
 
-      setTimeout(() => {
-        typingMsg.remove();
-        const botMsg = addMessage(respostas[key].texto, "bot");
+        await new Promise(r => setTimeout(r, 500)); // delay após clicar
+        await addMessage(key, "user");
 
-        // Adiciona botão "Fazer outra pergunta" após a resposta
-        addFazerOutraPergunta(botMsg);
-        addButtons(botMsg, respostas[key].subOpcoes);
-      }, 800);
-    });
+        const typingMsg = await addMessage("Checando banco de dados...", "bot");
+        typingMsg.classList.add("typing");
 
-    buttonContainer.appendChild(btn);
+        setTimeout(async () => {
+          typingMsg.remove();
+          const botMsg = await addMessage(respostas[key].texto, "bot");
+
+          const subOpcoesRestantes = respostas[key].subOpcoes.filter(op => opcoesDisponiveis.has(op));
+          if (subOpcoesRestantes.length > 0) {
+            addButtons(botMsg, subOpcoesRestantes);
+          } else {
+            addFazerOutraPergunta(botMsg);
+          }
+        }, typingDuration);
+      });
+
+    }, delay);
+    delay += 200;
   });
 
-  parentMsg.after(buttonContainer);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  // Scroll para baixo ao aparecer os botões
+  setTimeout(() => {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }, delay);
 }
 
-// Função corrigida do botão "Fazer outra pergunta"
+// Botão "Fazer outra pergunta" / "Reiniciar Chat"
 function addFazerOutraPergunta(parentMsg) {
   const container = document.createElement("div");
   container.classList.add("button-container");
 
   const btn = document.createElement("button");
   btn.classList.add("topic-btn");
-  btn.textContent = "Fazer outra pergunta";
 
-  btn.addEventListener("click", () => {
-    container.remove();
-
-    // Nova mensagem que será referência para os botões
-    const novaMsg = addMessage("Perfeito, o que mais deseja perguntar?", "bot");
-
-    // Mostra apenas opções principais ainda disponíveis
-    const principais = ["Como Funciona", "Componentes", "Problemas"].filter(op => opcoesDisponiveis.has(op));
-    addButtons(novaMsg, principais); // <<< passamos novaMsg como parent
-  });
+  if (opcoesDisponiveis.size > 0) {
+    btn.textContent = "Fazer outra pergunta";
+    btn.addEventListener("click", async () => {
+      container.remove();
+      await addMessage("Fazer outra pergunta", "user");
+      const novaMsg = await addMessage("Perfeito, o que mais deseja perguntar?", "bot");
+      const principais = ["Como Funciona", "Componentes", "Problemas"].filter(op => opcoesDisponiveis.has(op));
+      addButtons(novaMsg, principais);
+    });
+  } else {
+    btn.textContent = "Reiniciar Chat";
+    btn.addEventListener("click", () => {
+      chatBox.innerHTML = "";
+      opcoesDisponiveis = new Set(Object.keys(respostas));
+      const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
+      addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
+    });
+  }
 
   container.appendChild(btn);
   parentMsg.after(container);
-  chatBox.scrollTop = chatBox.scrollHeight;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      btn.style.opacity = "1";
+      btn.style.transform = "translateY(0)";
+    });
+  });
+
+  setTimeout(() => {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }, 100);
 }
 
-// Mensagem inicial
-const initialMsg = addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
-addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
+// Inicialização
+(async function init() {
+  const initialMsg = await addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona, Componentes ou Problemas.", "bot");
+  addButtons(initialMsg, ["Como Funciona", "Componentes", "Problemas"]);
+})();
 </script>
 </body>
 </html>
