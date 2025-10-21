@@ -89,7 +89,6 @@ body {
 <script>
 // --- Dados ---
 const respostas = {
-  "Oi": { texto: "Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.", subOpcoes: ["Como Funciona", "Componentes", "Problemas"] },
   "Como Funciona": { texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).", subOpcoes: ["Tampa"] },
   "Componentes": { texto: `Você vai precisar de:
 - 1 Arduino Uno
@@ -120,18 +119,16 @@ function addMessage(text, sender="bot") {
 function getOpcoesDisponiveis() {
   // Primeiro prioridade: sub-opções de seções clicadas mas não completas
   for (let key of clicados) {
-    const sub = respostas[key].subOpcoes.filter(s => !clicados.has(s));
-    if (sub.length > 0) return sub;
+    const sub = respostas[key]?.subOpcoes.filter(s => !clicados.has(s));
+    if (sub && sub.length > 0) return sub;
   }
 
   // Se nenhuma sub-opção pendente, liberar próximas opções principais ainda não clicadas
-  const opcoesPrincipais = Object.keys(respostas).filter(k => 
-    !clicados.has(k) && !Object.values(respostas).some(r => r.subOpcoes.includes(k))
-  );
+  const opcoesPrincipais = Object.keys(respostas).filter(k => !clicados.has(k));
   return opcoesPrincipais;
 }
 
-// Função para adicionar botões
+// Adiciona botões
 function addButtons(parentMsg) {
   const opcoes = getOpcoesDisponiveis();
   if (opcoes.length === 0) {
@@ -182,7 +179,8 @@ function addButtons(parentMsg) {
 function restartChat() {
   chatBox.innerHTML = "";
   clicados = new Set();
-  const initialMsg = addMessage(respostas["Oi"].texto, "bot");
+  // Mensagem inicial fixa
+  const initialMsg = addMessage("Olá! Eu sou o assistente da Lixeira Inteligente. Clique em uma opção abaixo para começar.", "bot");
   addButtons(initialMsg);
 }
 
