@@ -7,9 +7,8 @@
 <style>
 body {
   font-family: Arial, sans-serif;
-  background: #f4f4f9;
+  background: linear-gradient(135deg, #007bff, #00c6ff);
   margin: 0;
-  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,9 +17,9 @@ body {
 #chat-container {
   width: 400px;
   height: 600px;
-  background: white;
+  background: #fff;
   border-radius: 15px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  box-shadow: 0 0 25px rgba(0,0,0,0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -36,6 +35,11 @@ body {
   border-radius: 10px;
   max-width: 80%;
 }
+.user {
+  background: #007bff;
+  color: white;
+  align-self: flex-end;
+}
 .bot {
   background: #e6e6e6;
   color: black;
@@ -44,16 +48,14 @@ body {
 #button-area {
   display: flex;
   flex-wrap: wrap;
-  border-top: 1px solid #ccc;
-  padding: 10px;
   gap: 10px;
-  justify-content: center;
+  margin-top: 10px;
 }
 .topic-btn {
   background: #007bff;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -65,21 +67,11 @@ body {
 <body>
 <div id="chat-container">
   <div id="chat-box"></div>
-  <div id="button-area">
-    <button class="topic-btn" data-topic="oi">Saudação</button>
-    <button class="topic-btn" data-topic="funcionamento">Como Funciona</button>
-    <button class="topic-btn" data-topic="componentes">Componentes</button>
-    <button class="topic-btn" data-topic="ligacao">Conexões</button>
-    <button class="topic-btn" data-topic="ia">IA</button>
-    <button class="topic-btn" data-topic="tampa">Tampa</button>
-    <button class="topic-btn" data-topic="problemas">Problemas</button>
-  </div>
 </div>
 
 <script>
 // --- Chatbot com botões ---
 const chatBox = document.getElementById("chat-box");
-const buttons = document.querySelectorAll(".topic-btn");
 
 // respostas pré-programadas
 const respostas = {
@@ -93,25 +85,41 @@ const respostas = {
 };
 
 // função para adicionar mensagem
-function addMessage(text) {
+function addMessage(text, sender = "bot", withButtons = false) {
+  // cria mensagem
   const msg = document.createElement("div");
-  msg.classList.add("message", "bot");
+  msg.classList.add("message", sender);
   msg.textContent = text;
   chatBox.appendChild(msg);
+
+  // se a mensagem for do bot, adiciona botões
+  if (sender === "bot" && withButtons) {
+    const buttonArea = document.createElement("div");
+    buttonArea.id = "button-area";
+
+    // criar botões para cada tópico
+    Object.keys(respostas).forEach(key => {
+      const btn = document.createElement("button");
+      btn.classList.add("topic-btn");
+      btn.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+      btn.dataset.topic = key;
+      btn.addEventListener("click", () => {
+        // adiciona mensagem do usuário
+        addMessage(btn.textContent, "user");
+        // adiciona resposta do bot
+        setTimeout(() => addMessage(respostas[key], "bot", true), 400);
+      });
+      buttonArea.appendChild(btn);
+    });
+
+    chatBox.appendChild(buttonArea);
+  }
+
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// evento para cada botão
-buttons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const topic = btn.getAttribute("data-topic");
-    const resposta = respostas[topic] || "Não entendi 😅";
-    addMessage(resposta);
-  });
-});
-
-// mensagem inicial
-addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA, servos ou problemas.");
+// mensagem inicial com botões
+addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA, servos ou problemas.", "bot", true);
 </script>
 </body>
 </html>
