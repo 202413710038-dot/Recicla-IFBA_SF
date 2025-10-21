@@ -9,7 +9,6 @@ body {
   font-family: Arial, sans-serif;
   background: #f4f4f9;
   margin: 0;
-  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -41,30 +40,58 @@ body {
   color: black;
   align-self: flex-start;
 }
+#button-area {
+  display: flex;
+  flex-wrap: wrap;
+  border-top: 1px solid #ccc;
+  padding: 10px;
+  gap: 10px;
+  justify-content: center;
+}
+.topic-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.topic-btn:hover {
+  background: #0056b3;
+}
 </style>
 </head>
 <body>
 <div id="chat-container">
   <div id="chat-box"></div>
+  <div id="button-area">
+    <button class="topic-btn" data-topic="oi">Saudação</button>
+    <button class="topic-btn" data-topic="funcionamento">Como Funciona</button>
+    <button class="topic-btn" data-topic="componentes">Componentes</button>
+    <button class="topic-btn" data-topic="ligacao">Conexões</button>
+    <button class="topic-btn" data-topic="ia">IA</button>
+    <button class="topic-btn" data-topic="tampa">Tampa</button>
+    <button class="topic-btn" data-topic="problemas">Problemas</button>
+  </div>
 </div>
 
 <script>
-// --- Chatbot automático ---
+// --- Chatbot com botões ---
 const chatBox = document.getElementById("chat-box");
+const buttons = document.querySelectorAll(".topic-btn");
 
-// mensagens pré-programadas
-const mensagens = [
-  "Olá! Sou o chatbot da Lixeira Inteligente. Posso te explicar como ela funciona.",
-  "A Lixeira Inteligente usa Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
-  "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera, fios jumper e fonte 5V.",
-  "Conecte o servo ao pino digital do Arduino (ex: D9), VCC no 5V e GND no GND. A câmera vai no PC que roda a IA.",
-  "A IA usa visão computacional para identificar o tipo de material, reconhecendo plástico, metal e papel.",
-  "O servo gira para levantar a tampa do compartimento correto.",
-  "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).",
-  "Espero que isso ajude! 😄"
-];
+// respostas pré-programadas
+const respostas = {
+  oi: "Olá! Eu sou o assistente da Lixeira Inteligente. Posso te ajudar a entender como ela funciona.",
+  funcionamento: "A Lixeira Inteligente usa Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).",
+  componentes: "Você vai precisar de: 1 Arduino Uno, 1 protoboard, 1 ou 2 servos motores, uma câmera (USB ou módulo), fios jumper e fonte 5V.",
+  ligacao: "Conecte o servo ao pino digital do Arduino (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.",
+  ia: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.",
+  tampa: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).",
+  problemas: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A)."
+};
 
-// função para adicionar mensagens
+// função para adicionar mensagem
 function addMessage(text) {
   const msg = document.createElement("div");
   msg.classList.add("message", "bot");
@@ -73,16 +100,17 @@ function addMessage(text) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// função para exibir mensagens sequencialmente
-function mostrarMensagens(seq, delay = 1200) {
-  if (seq >= mensagens.length) return;
-  addMessage(mensagens[seq]);
-  setTimeout(() => mostrarMensagens(seq + 1, delay), delay);
-}
+// evento para cada botão
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const topic = btn.getAttribute("data-topic");
+    const resposta = respostas[topic] || "Não entendi 😅";
+    addMessage(resposta);
+  });
+});
 
-// iniciar exibição automática
-mostrarMensagens(0);
+// mensagem inicial
+addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre montagem, IA, servos ou problemas.");
 </script>
 </body>
 </html>
-
