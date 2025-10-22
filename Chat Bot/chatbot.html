@@ -82,23 +82,57 @@ body {
 
 <script>
 const chatBox = document.getElementById("chat-box");
-
 const animDuration = 500;
 const typingDuration = 1000;
 
+// === NOVOS TÓPICOS ===
 const respostas = {
-  "Como Funciona": { texto: "A Lixeira Inteligente utiliza um Arduino Uno, servos motores e uma câmera com IA para identificar materiais (plástico, metal e papel).", subOpcoes: ["Tampa", "IA"] },
-  "Componentes": { texto: `Você vai precisar de:
-- 1 Arduino Uno
-- 1 Protoboard
-- 1 ou 2 Servos motores
-- 1 Câmera (USB ou módulo)
-- Fios jumper
-- Fonte 5V`, subOpcoes: ["Conexões"] },
-  "Tampa": { texto: "O servo gira para levantar a tampa do compartimento correto (plástico, metal ou papel).", subOpcoes: ["IA"] },
-  "IA": { texto: "A IA usa visão computacional para identificar o tipo de material. Ela reconhece plástico, metal e papel a partir da imagem da câmera.", subOpcoes: ["Tampa"] },
-  "Conexões": { texto: "Conecte o servo ao pino digital (ex: D9), VCC no 5V e GND no GND do Arduino. A câmera vai no PC que roda a IA.", subOpcoes: ["Problemas"] },
-  "Problemas": { texto: "Verifique se o servo está bem conectado, se o GND é comum e se a fonte tem corrente suficiente (>=1A).", subOpcoes: [] }
+  "Documentação do Chat Bot": {
+    texto: `🤖 Olá! Sou o Chatbot do Projeto Recicla IFBA-SF.
+Minha missão é responder suas dúvidas e ajudar você a acompanhar a apresentação do nosso projeto de Lixeira Inteligente.
+Eu não uso Inteligência Artificial própria para as respostas, apenas forneço informações resumidas e essenciais.`,
+    subOpcoes: ["Documentação da I.A", "Quais são os planos de melhoria de hardware?"]
+  },
+
+  "Documentação da I.A": {
+    texto: `A I.A é o cérebro da nossa Lixeira Inteligente, responsável por classificar o lixo (Papel ou Plástico) e mover os servos.
+
+- Linguagens Principais: Python e C# (Arduino).
+- API de I.A: TensorFlow (Teachable Machine) - API Gratuita.
+- Funcionamento Básico: O código Python gera um valor de confiança (0.0 a 1.0) usando a I.A. Este valor é enviado para o Arduino, mas futuramente será enviado para o ESP32.
+
+No Arduino, o valor é comparado com uma 'Confiança' mínima. Se for maior, o servo se move para 90º (abrindo a lixeira) e retorna a 0º após 5 segundos.
+
+🔧 Próximos Passos:
+1. Melhorar a Precisão do modelo.
+2. Otimizar o código para dispositivos menores.
+3. Treinar a I.A para reconhecer texturas que não são Papel nem Plástico.`,
+    subOpcoes: ["Quais peças eu preciso para a parte eletrônica?"]
+  },
+
+  "Por que o modelo físico é de papelão e não impresso em 3D?": {
+    texto: `Para evitar atrasos no projeto! Focar no papelão nos deu tempo para desenvolver a IA e o código.
+Queremos muito fazer um modelo em escala maior e com impressão 3D no futuro!`,
+    subOpcoes: []
+  },
+
+  "Quais peças eu preciso para a parte eletrônica?": {
+    texto: `Você precisa de:
+1️⃣ Arduino Uno
+2️⃣ Servos Motores
+🔌 Jumpers (macho-macho)
+⬜ 1 Protoboard
+
+O circuito é simples, mas tenha atenção à polaridade e nas faixas da protoboard (horizontal/barramento e vertical/terminal)!`,
+    subOpcoes: ["Quais são os planos de melhoria de hardware?"]
+  },
+
+  "Quais são os planos de melhoria de hardware?": {
+    texto: `O Arduino Uno e o servo motor têm limitações para projetos maiores.
+Planeja-se migrar para o ESP32 (melhor IA e conexão com apps) e usar Motor de Passo (mais torque e força).
+Também queremos usar materiais mais resistentes para a lixeira.`,
+    subOpcoes: ["Por que o modelo físico é de papelão e não impresso em 3D?"]
+  }
 };
 
 let opcoesDisponiveis = new Set(Object.keys(respostas));
@@ -206,8 +240,8 @@ function addFazerOutraPergunta(parentMsg) {
     btn.addEventListener("click", async () => {
       container.remove();
       await addMessage("Fazer outra pergunta", "user");
-      const novaMsg = await addMessage("Perfeito, o que mais deseja perguntar?", "bot");
-      const principais = ["Como Funciona", "Componentes"].filter(op => opcoesDisponiveis.has(op));
+      const novaMsg = await addMessage("Perfeito, o que mais deseja saber?", "bot");
+      const principais = ["Documentação do Chat Bot", "Documentação da I.A", "Quais peças eu preciso para a parte eletrônica?"].filter(op => opcoesDisponiveis.has(op));
       addButtons(novaMsg, principais);
     });
   } else {
@@ -215,7 +249,7 @@ function addFazerOutraPergunta(parentMsg) {
     btn.addEventListener("click", async () => {
       container.remove();
       await addMessage("Adeus!", "user");
-      await addMessage("Obrigado por analisar nosso projeto! Esperamos que tenha gostado e que a Lixeira Inteligente tenha ficado clara.", "bot");
+      await addMessage("Obrigado por analisar nosso projeto! Esperamos que tenha gostado e que a Lixeira Inteligente tenha ficado clara. ♻️", "bot");
     });
   }
 
@@ -235,8 +269,8 @@ function addFazerOutraPergunta(parentMsg) {
 }
 
 (async function init() {
-  const initialMsg = await addMessage("Olá! 👋 Clique em um botão abaixo para saber sobre Como Funciona ou Componentes.", "bot");
-  addButtons(initialMsg, ["Como Funciona", "Componentes"]);
+  const initialMsg = await addMessage("Olá! 👋 Clique em um botão abaixo para começar a explorar o projeto da Lixeira Inteligente.", "bot");
+  addButtons(initialMsg, ["Documentação do Chat Bot", "Documentação da I.A", "Quais peças eu preciso para a parte eletrônica?"]);
 })();
 </script>
 </body>
