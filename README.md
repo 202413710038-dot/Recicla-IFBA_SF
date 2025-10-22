@@ -21,16 +21,6 @@ O Recicla IFBA-SF é um projeto desenvolvido para a Semana Nacional de Ciência 
 - Os arquivos disponíveis neste repositório são fornecidos apenas para análise técnica e acadêmica.
 - Eles incluem esquemas de ligação, códigos de exemplo e documentação do projeto.
 
-**Privacidade e Uso**
-
-- O projeto é de caráter privado.
-- Não é permitido reproduzir, modificar ou distribuir qualquer conteúdo sem a autorização expressa dos autores.
-- O repositório serve somente como referência técnica.
-
-**Contato**
-
-- Para dúvidas ou solicitações de uso, entre em contato com os autores através do canal institucional do IFBA-SF.
-
 **Autores**
 
 - Rafael Rodney Guimarães da Silva – Responsável pela parte robótica, elaboração do banner do projeto e condução da pesquisa.
